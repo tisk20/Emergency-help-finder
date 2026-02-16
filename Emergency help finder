@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emergency Help Finder</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #faf9f7;
+      --fg: #1a1a1a;
+      --muted: #6b6b6b;
+      --accent: #e63946;
+      --accent-dark: #c1121f;
+      --card: #ffffff;
+      --border: #e5e5e5;
+      --success: #2d6a4f;
+      --warning: #f4a261;
+    }
+
+    * {
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    h1, h2, h3, .font-display {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--fg);
+    }
+
+    /* Animated background */
+    .hero-bg {
+      background: 
+        radial-gradient(ellipse at 20% 0%, rgba(230, 57, 70, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 100%, rgba(45, 106, 79, 0.06) 0%, transparent 50%),
+        var(--bg);
+    }
+
+    /* Pulse animation for emergency elements */
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.7; }
+      100% { transform: scale(0.95); opacity: 1; }
+    }
+
+    .pulse-emergency {
+      animation: pulse-ring 2s ease-in-out infinite;
+    }
+
+    /* Card hover effect */
+    .service-card {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transform: translateY(0);
+    }
+
+    .service-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Accordion */
+    .accordion-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease-out, padding 0.3s ease;
+    }
+
+    .accordion-content.open {
+      max-height: 500px;
+    }
+
+    .accordion-icon {
+      transition: transform 0.3s ease;
+    }
+
+    .accordion-btn.open .accordion-icon {
+      transform: rotate(180deg);
+    }
+
+    /* Scroll reveal */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Focus states */
+    button:focus-visible,
+    a:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    /* Tab styles */
+    .tab-btn {
+      position: relative;
+      transition: color 0.3s ease;
+    }
+
+    .tab-btn::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--accent);
+      transition: width 0.3s ease;
+    }
+
+    .tab-btn.active::after {
+      width: 100%;
+    }
+
+    .tab-btn.active {
+      color: var(--accent);
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      .pulse-emergency {
+        animation: none;
+      }
+      .reveal {
+        opacity: 1;
+        transform: none;
+        transition: none;
+      }
+      .service-card {
+        transition: none;
+      }
+    }
+
+    /* Number counter animation */
+    @keyframes countUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .stat-number {
+      animation: countUp 0.8s ease-out forwards;
+    }
+
+    /* Emergency number highlight */
+    .emergency-number {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .emergency-number:hover {
+      transform: scale(1.02);
+      box-shadow: 0 8px 24px -4px rgba(230, 57, 70, 0.4);
+    }
+
+    .emergency-number:active {
+      transform: scale(0.98);
+    }
+  </style>
+</head>
+<body class="hero-bg min-h-screen">
+  
+  <!-- Header -->
+  <header class="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-[var(--bg)]/80 border-b border-[var(--border)]">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+      <a href="#" class="flex items-center gap-2">
+        <div class="w-10 h-10 rounded-xl bg-[var(--accent)] flex items-center justify-center">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+          </svg>
+        </div>
+        <span class="font-display font-semibold text-lg">Emergency Help</span>
+      </a>
+      <nav class="hidden md:flex items-center gap-6">
+        <a href="#services" class="text-[var(--muted)] hover:text-[var(--fg)] transition-colors">Services</a>
+        <a href="#first-aid" class="text-[var(--muted)] hover:text-[var(--fg)] transition-colors">First Aid</a>
+        <a href="#emergency-guide" class="text-[var(--muted)] hover:text-[var(--fg)] transition-colors">Emergency Guide</a>
+      </nav>
+      <button class="md:hidden p-2" aria-label="Menu">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="pt-28 pb-16 px-4">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-12 reveal">
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--accent)]/10 text-[var(--accent)] text-sm font-medium mb-6">
+          <span class="w-2 h-2 rounded-full bg-[var(--accent)] pulse-emergency"></span>
+          Available 24/7
+        </div>
+        <h1 class="font-display text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6">
+          Find Help<br>
+          <span class="text-[var(--accent)]">When It Matters</span>
+        </h1>
+        <p class="text-[var(--muted)] text-lg md:text-xl max-w-2xl mx-auto">
+          Quick access to emergency services, hospitals, blood banks, and life-saving first aid instructions.
+        </p>
+      </div>
+
+      <!-- Emergency Numbers -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12 reveal" style="transition-delay: 0.1s;">
+        <a href="tel:911" class="emergency-number rounded-2xl p-6 text-white text-center">
+          <div class="text-3xl md:text-4xl font-display font-bold mb-1">911</div>
+          <div class="text-white/80 text-sm">Emergency</div>
+        </a>
+        <a href="tel:112" class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 text-center hover:border-[var(--accent)] transition-colors">
+          <div class="text-3xl md:text-4xl font-display font-bold text-[var(--fg)] mb-1">112</div>
+          <div class="text-[var(--muted)] text-sm">Universal</div>
+        </a>
+        <a href="tel:108" class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 text-center hover:border-[var(--accent)] transition-colors">
+          <div class="text-3xl md:text-4xl font-display font-bold text-[var(--fg)] mb-1">108</div>
+          <div class="text-[var(--muted)] text-sm">Ambulance</div>
+        </a>
+        <a href="tel:104" class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 text-center hover:border-[var(--accent)] transition-colors">
+          <div class="text-3xl md:text-4xl font-display font-bold text-[var(--fg)] mb-1">104</div>
+          <div class="text-[var(--muted)] text-sm">Health Helpline</div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services Section -->
+  <section id="services" class="py-16 px-4">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-12 reveal">
+        <h2 class="font-display text-3xl md:text-4xl font-bold mb-4">Emergency Services</h2>
+        <p class="text-[var(--muted)] max-w-xl mx-auto">Select a service to find nearby help and resources</p>
+      </div>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Hospital Card -->
+        <div class="service-card bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 reveal cursor-pointer" onclick="openModal('hospital')" style="transition-delay: 0.1s;">
+          <div class="w-14 h-14 rounded-xl bg-[#e8f5e9] flex items-center justify-center mb-4">
+            <svg class="w-7 h-7 text-[#2e7d32]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+            </svg>
+          </div>
+          <h3 class="font-display font-semibold text-xl mb-2">Find Hospital</h3>
+          <p class="text-[var(--muted)] text-sm mb-4">Locate nearest hospitals with emergency departments</p>
+          <div class="flex items-center text-[var(--accent)] font-medium text-sm">
+            Find Now
+            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Blood Bank Card -->
+        <div class="service-card bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 reveal cursor-pointer" onclick="openModal('bloodbank')" style="transition-delay: 0.2s;">
+          <div class="w-14 h-14 rounded-xl bg-[#ffebee] flex items-center justify-center mb-4">
+            <svg class="w-7 h-7 text-[#c62828]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+            </svg>
+          </div>
+          <h3 class="font-display font-semibold text-xl mb-2">Blood Banks</h3>
+          <p class="text-[var(--muted)] text-sm mb-4">Find nearby blood banks and donation centers</p>
+          <div class="flex items-center text-[var(--accent)] font-medium text-sm">
+            Find Now
+            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Ambulance Card -->
+        <div class="service-card bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 reveal cursor-pointer" onclick="openModal('ambulance')" style="transition-delay: 0.3s;">
+          <div class="w-14 h-14 rounded-xl bg-[#fff3e0] flex items-center justify-center mb-4">
+            <svg class="w-7 h-7 text-[#ef6c00]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+          </div>
+          <h3 class="font-display font-semibold text-xl mb-2">Ambulance</h3>
+          <p class="text-[var(--muted)] text-sm mb-4">Quick access to ambulance services in your area</p>
+          <div class="flex items-center text-[var(--accent)] font-medium text-sm">
+            Find Now
+            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- First Aid Card -->
+        <div class="service-card bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 reveal cursor-pointer" onclick="openModal('firstaid')" style="transition-delay: 0.4s;">
+          <div class="w-14 h-14 rounded-xl bg-[#e3f2fd] flex items-center justify-center mb-4">
+            <svg class="w-7 h-7 text-[#1565c0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-3-3v6m-7 4h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            </svg>
+          </div>
+          <h3 class="font-display font-semibold text-xl mb-2">First Aid</h3>
+          <p class="text-[var(--muted)] text-sm mb-4">Essential first aid instructions for emergencies</p>
+          <div class="flex items-center text-[var(--accent)] font-medium text-sm">
+            Learn More
+            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Section -->
+  <section class="py-16 px-4 bg-[var(--card)] border-y border-[var(--border)]">
+    <div class="max-w-6xl mx-auto">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+        <div class="reveal">
+          <div class="text-4xl md:text-5xl font-display font-bold text-[var(--accent)] stat-number">50K+</div>
+          <div class="text-[var(--muted)] mt-2">Hospitals Listed</div>
+        </div>
+        <div class="reveal" style="transition-delay: 0.1s;">
+          <div class="text-4xl md:text-5xl font-display font-bold text-[var(--accent)] stat-number">12K+</div>
+          <div class="text-[var(--muted)] mt-2">Blood Banks</div>
+        </div>
+        <div class="reveal" style="transition-delay: 0.2s;">
+          <div class="text-4xl md:text-5xl font-display font-bold text-[var(--accent)] stat-number">24/7</div>
+          <div class="text-[var(--muted)] mt-2">Availability</div>
+        </div>
+        <div class="reveal" style="transition-delay: 0.3s;">
+          <div class="text-4xl md:text-5xl font-display font-bold text-[var(--accent)] stat-number">5M+</div>
+          <div class="text-[var(--muted)] mt-2">Lives Helped</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- First Aid Instructions -->
+  <section id="first-aid" class="py-16 px-4">
+    <div class="max-w-4xl mx-auto">
+      <div class="text-center mb-12 reveal">
+        <h2 class="font-display text-3xl md:text-4xl font-bold mb-4">First Aid Instructions</h2>
+        <p class="text-[var(--muted)] max-w-xl mx-auto">Quick reference guides for common emergency situations</p>
+      </div>
+
+      <!-- Tabs -->
+      <div class="flex flex-wrap justify-center gap-2 mb-8 reveal" style="transition-delay: 0.1s;">
+        <button class="tab-btn active px-4 py-2 font-medium text-sm" data-tab="bleeding">Bleeding</button>
+        <button class="tab-btn px-4 py-2 font-medium text-sm text-[var(--muted)]" data-tab="burns">Burns</button>
+        <button class="tab-btn px-4 py-2 font-medium text-sm text-[var(--muted)]" data-tab="choking">Choking</button>
+        <button class="tab-btn px-4 py-2 font-medium text-sm text-[var(--muted)]" data-tab="heart">Heart Attack</button>
+        <button class="tab-btn px-4 py-2 font-medium text-sm text-[var(--muted)]" data-tab="fracture">Fracture</button>
+      </div>
+
+      <!-- Tab Content -->
+      <div class="tab-content-container reveal" style="transition-delay: 0.2s;">
+        <div id="tab-bleeding" class="tab-content">
+          <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 md:p-8">
+            <div class="flex items-start gap-4 mb-6">
+              <div class="w-12 h-12 rounded-xl bg-[#ffebee] flex items-center justify-center flex-shrink-0">
+                <svg class="w-6 h-6 text-[#c62828]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                </svg>
+              </div>
+              <div>
+                <h3 class="font-display font-semibold text-xl">Severe Bleeding</h3>
+                <p class="text-[var(--muted)] text-sm">Critical emergency requiring immediate action</p>
+              </div>
+            </div>
+            <ol class="space-y-4">
+              <li class="flex gap-3">
+                <span class="flex-shrink-0 w-7 h-7 rounded-full bg-[var(--accent)] text-white flex items-center justify-center text-sm font-medium">1</span>
+                <div>
+                  <strong>Apply direct pressure</strong>
+                  <p class="text-[var(--muted)] text-sm">Use a clean cloth or bandage and press firmly on the wound.</p>
+                </div>
+              </li>
+              <li class="flex gap-3">
+                <span class="flex-shrink-0 w-7 h-7 rounded-full bg-[var(--accent)] text-white flex items-center justify-center text-sm font-medium">2</span>
+                <div>
+                  <strong>Elevate the injured area</strong>
+                  <p class="text-[var(--muted)] text-sm">Keep the wound above heart level if possible.</p>
+                </div>
+              </li>
+              <li class="flex gap-3">
+                <span class="flex-shrink-0 w-7 h-7 rounded-full bg-[var(--accent)] text-white flex items-center justify-center text-sm font-medium">3</span>
+                <div>
+                  <strong>Do not remove the bandage</strong>
+                  <p class="text-[var(--muted)] text-sm">If blood soaks through, add more layers on top.</p>
+                </div>
+              </li>
+              <li class="flex gap-3">
+                <span class="flex-shrink-0 w-7 h-7 rounded-full bg-[var(--accent)] text-white flex items-center justify-center text-sm font-medium">4</span>
+                <div>
+                  <strong>Call emergency services</strong>
+                  <p class="text-[var(--muted)] text-sm">Dial 911 or your local emergency number immediately.</p>
+                </div>
+              </li>
+            </ol>
+          </div>
+        </div>
+
+        <div id="tab-burns" class="tab-content hidden">
+          <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 md:p-8">
+            <div class="flex items-start gap-4 mb-6">
+              <div class="w-12 h-12 rounded-xl bg-[#fff3e0] flex items-center justify-center flex-shrink-0">
+                <svg class="w-6 h-6 text-[#ef6c00]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/>
+                </svg>
+              </div>
+              <div>
+                <h3 class="font-display font-semibold text-xl">Burns Treatment</h3>
+                <p class="text-[var(--muted)] text-sm">Thermal, chemical, and electrical burn care</p>
+              </div>
+            </div>
+            <ol class="space-y-4">
+              <li class="flex gap-3">
+                <span class="flex-shrink-0 w-7 h-7 rounded-full bg-[var(--warning)] text-white flex items-center justify-center text-sm font-medium">1</span>
+                <div>
+                  <strong>Cool the burn</strong>
+                  <p class="text-[var(--muted)] text-sm">Run cool (not cold) water over the burn for 10-20 minutes.</p>
+                </div>
+              </li>
+              <li class="flex gap-3">
+                <span class="flex-shrink-0 w-7 h-7 rounded-full bg-[var(--warning)] text-white flex items-center justify-center text-sm font-medium">2</span>
+                <div>
+                  <strong>Remove tight items</strong>
+                  <p class="text-[var(--muted)] text-sm">Remove rings, watches before swelling begins.</p>
+                </div>
+              </li>
+              <li class="flex gap-3">
+                <span class="flex-shrink-0 w-7 h-7 rounded-full bg-[var(--warning)] text-white flex items-center justify-center text-sm font-medium">3</span>
+                <div>
+                  <strong>Cover loosely</strong>
+                  <p class="text-[var(--muted)] text-sm">Use a sterile, non-stick bandage or clean cloth.</p>
+                </div>
+              </li>
+              <li class="flex gap-3">
+                <span class="flex-shrink-0 w-7 h-7 rounded-full bg-[var(--warning)] text-white flex items-center justify-center text-sm font-medium">4</span>
+                <div>
+                  <strong>Don't break blisters</strong>
+                  <p class="text-[var(--muted)] text-sm">Breaking blisters can lead to infection.</p>
+                </div>
+              </li>
+            </ol>
+          </div>
+        </div>
+
+        <div id="tab-choking" class="tab-content hidden">
+          <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 md:p-8">
+            <div class="flex items-start gap-4 mb-6">
+              <div class="w-12 h-12 rounded-xl bg-[#e8f5e9] flex items-center justify-center flex-shrink-0">
+                <svg class="w-6 h-6 text-[#2e7d32]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                </svg>
+              </div>
+              <div>
+                <h3 class="font-display font-semibold text-xl">Choking Response</h3>
+                <p class="text-[var(--muted)] text-sm">Heimlich maneuver and airway clearance</p>
+              </div>
+            </div>
+            <ol class="space-y-4">
+              <li class="flex gap-3">
+                <span class="flex-shrink-0 w-7 h-7 rounded-full bg-[var(--success)] text-white flex items-center justify-center text-sm font-medium">1</span>
+                <div>
+                  <strong>Assess the situation</strong>
+                  <p class="text-[var(--muted)] text-sm">Ask "Are you choking?" If they can speak or cough, encourage them to continue.</p>
+                </div>
+              </li>
+              <li class="flex gap-3">
+                <span class="flex-shrink-0 w-7 h-7 rounded-full bg-[var(--success)] text-white flex items-center justify-center text-sm font-medium">2</span>
+                <div>
+                  <strong>Perform abdominal thrusts</strong>
+                  <p class="text-[var(--muted)] text-sm">Stand behind, wrap arms around waist, make a fist above navel.</p>
+                </div>
+              </li>
+              <li class="flex gap-3">
+                <span class="flex-shrink-0 w-7 h-7 rounded-full bg-[var(--success)] text-white flex items-center justify-center text-sm font-medium">3</span>
+                <div>
+                  <strong>Thrust inward and upward</strong>
+                  <p class="text-[var(--muted)] text-sm">Repeat until the object is expelled or person becomes unconscious.</p>
+                </div>
+              </li>
+              <li class="flex gap-3">
+                <span class="flex-shrink-0 w-7 h-7 rounded-full bg-[var(--success)] text-white flex items-center justify-center text-sm font-medium">4</span>
+                <div>
+                  <strong>If unconscious, begin CPR</strong>
+                  <p class="text-[var(--muted)] text-sm">Call 911 and start CPR if the person loses consciousness.</p>
+                </div>
+              </li>
+            </ol>
+          </div>
+        </div>
+
+        <div id="tab-heart" class="tab-content hidden">
+          <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 md:p-8">
+            <div class="flex items-start gap-4 mb-6">
+              <div class="w-12 h-12 rounded-xl bg-[#ffebee] flex items-center justify-center flex-shrink-0">
+                <svg class="w-6 h-6 text-[#c62828]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                </svg>
+              </div>
+              <div>
+                <h3 class="font-display font-semibold text-xl">Heart Attack</h3>
+                <p class="text-[var(--muted)] text-sm">Recognizing and responding to cardiac emergencies</p>
+              </div>
+            </div>
+            <ol class="space-y-4">
+              <li class="flex gap-3">
+                <span class="flex-shrink-0 w-7 h-7 rounded-full bg-[var(--accent)] text-white flex items-center justify-center text-sm font-medium">1</span>
+                <div>
+                  <strong>Call 911 immediately</strong>
+                  <p class="text-[var(--muted)] text-sm">Time is critical. Don't wait to see if symptoms go away.</p>
+                </div>
+              </li>
+              <li class="flex gap-3">
+                <span class="flex-shrink-0 w-7 h-7 rounded-full bg-[var(--accent)] text-white flex items-center justify-center text-sm font-medium">2</span>
+                <div>
+                  <strong>Keep the person calm</strong>
+                  <p class="text-[var(--muted)] text-sm">Have them sit in a comfortable position, loosen tight clothing.</p>
+                </div>
+              </li>
+              <li class="flex gap-3">
+                <span class="flex-shrink-0 w-7 h-7 rounded-full bg-[var(--accent)] text-white flex items-center justify-center text-sm font-medium">3</span>
+                <div>
+                  <strong>Chew aspirin if available</strong>
+                  <p class="text-[var(--muted)] text-sm">If not allergic, chew and swallow one adult aspirin (325mg).</p>
+                </div>
+              </li>
+              <li class="flex gap-3">
+                <span class="flex-shrink-0 w-7 h-7 rounded-full bg-[var(--accent)] text-white flex items-center justify-center text-sm font-medium">4</span>
+                <div>
+                  <strong>Be ready for CPR</strong>
+                  <p class="text-[var(--muted)] text-sm">If person stops breathing, begin CPR immediately.</p>
+                </div>
+              </li>
+            </ol>
+          </div>
+        </div>
+
+        <div id="tab-fracture" class="tab-content hidden">
+          <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 md:p-8">
+            <div class="flex items-start gap-4 mb-6">
+              <div class="w-12 h-12 rounded-xl bg-[#e3f2fd] flex items-center justify-center flex-shrink-0">
+                <svg class="w-6 h-6 text-[#1565c0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
+                </svg>
+              </div>
+              <div>
+                <h3 class="font-display font-semibold text-xl">Bone Fractures</h3>
+                <p class="text-[var(--muted)] text-sm">Immobilization and care for broken bones</p>
+              </div>
+            </div>
+            <ol class="space-y-4">
+              <li class="flex gap-3">
+                <span class="flex-shrink-0 w-7 h-7 rounded-full bg-[#1565c0] text-white flex items-center justify-center text-sm font-medium">1</span>
+                <div>
+                  <strong>Don't move the injured area</strong>
+                  <p class="text-[var(--muted)] text-sm">Keep the limb as still as possible to prevent further damage.</p>
+                </div>
+              </li>
+              <li class="flex gap-3">
+                <span class="flex-shrink-0 w-7 h-7 rounded-full bg-[#1565c0] text-white flex items-center justify-center text-sm font-medium">2</span>
+                <div>
+                  <strong>Apply ice</strong>
+                  <p class="text-[var(--muted)] text-sm">Use an ice pack wrapped in cloth to reduce swelling.</p>
+                </div>
+              </li>
+              <li class="flex gap-3">
+                <span class="flex-shrink-0 w-7 h-7 rounded-full bg-[#1565c0] text-white flex items-center justify-center text-sm font-medium">3</span>
+                <div>
+                  <strong>Immobilize with splint</strong>
+                  <p class="text-[var(--muted)] text-sm">Pad the splint and secure above and below the fracture.</p>
+                </div>
+              </li>
+              <li class="flex gap-3">
+                <span class="flex-shrink-0 w-7 h-7 rounded-full bg-[#1565c0] text-white flex items-center justify-center text-sm font-medium">4</span>
+                <div>
+                  <strong>Seek medical help</strong>
+                  <p class="text-[var(--muted)] text-sm">Go to the ER or call for ambulance transport.</p>
+                </div>
+              </li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- What to do in Emergency -->
+  <section id="emergency-guide" class="py-16 px-4 bg-[var(--card)] border-y border-[var(--border)]">
+    <div class="max-w-4xl mx-auto">
+      <div class="text-center mb-12 reveal">
+        <h2 class="font-display text-3xl md:text-4xl font-bold mb-4">What To Do In An Emergency</h2>
+        <p class="text-[var(--muted)] max-w-xl mx-auto">Stay calm and follow these steps to handle any emergency situation</p>
+      </div>
+
+      <div class="space-y-4">
+        <!-- Step 1 -->
+        <div class="accordion-item border border-[var(--border)] rounded-xl overflow-hidden reveal" style="transition-delay: 0.1s;">
+          <button class="accordion-btn w-full flex items-center justify-between p-5 text-left bg-white hover:bg-gray-50 transition-colors" onclick="toggleAccordion(this)">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-lg bg-[var(--accent)] text-white flex items-center justify-center font-display font-bold">1</div>
+              <span class="font-display font-semibold">Stay Calm and Assess</span>
+            </div>
+            <svg class="accordion-icon w-5 h-5 text-[var(--muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="accordion-content bg-gray-50">
+            <div class="p-5 pt-0">
+              <p class="text-[var(--muted)]">Take a deep breath and quickly evaluate the situation. Determine if there's immediate danger to you or others. Your calm demeanor will help others stay focused and follow instructions.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="accordion-item border border-[var(--border)] rounded-xl overflow-hidden reveal" style="transition-delay: 0.2s;">
+          <button class="accordion-btn w-full flex items-center justify-between p-5 text-left bg-white hover:bg-gray-50 transition-colors" onclick="toggleAccordion(this)">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-lg bg-[var(--accent)] text-white flex items-center justify-center font-display font-bold">2</div>
+              <span class="font-display font-semibold">Call for Help</span>
+            </div>
+            <svg class="accordion-icon w-5 h-5 text-[var(--muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="accordion-content bg-gray-50">
+            <div class="p-5 pt-0">
+              <p class="text-[var(--muted)]">Dial emergency services (911, 112, or your local emergency number). Provide your exact location, nature of emergency, number of people involved, and any known medical conditions. Stay on the line until the dispatcher tells you to hang up.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="accordion-item border border-[var(--border)] rounded-xl overflow-hidden reveal" style="transition-delay: 0.3s;">
+          <button class="accordion-btn w-full flex items-center justify-between p-5 text-left bg-white hover:bg-gray-50 transition-colors" onclick="toggleAccordion(this)">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-lg bg-[var(--accent)] text-white flex items-center justify-center font-display font-bold">3</div>
+              <span class="font-display font-semibold">Make the Area Safe</span>
+            </div>
+            <svg class="accordion-icon w-5 h-5 text-[var(--muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="accordion-content bg-gray-50">
+            <div class="p-5 pt-0">
+              <p class="text-[var(--muted)]">Remove any hazards if safe to do so. Turn off vehicles, move flammable materials, clear paths for emergency responders. If the scene is dangerous, move to a safe distance and wait for professional help.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="accordion-item border border-[var(--border)] rounded-xl overflow-hidden reveal" style="transition-delay: 0.4s;">
+          <button class="accordion-btn w-full flex items-center justify-between p-5 text-left bg-white hover:bg-gray-50 transition-colors" onclick="toggleAccordion(this)">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-lg bg-[var(--accent)] text-white flex items-center justify-center font-display font-bold">4</div>
+              <span class="font-display font-semibold">Provide First Aid</span>
+            </div>
+            <svg class="accordion-icon w-5 h-5 text-[var(--muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="accordion-content bg-gray-50">
+            <div class="p-5 pt-0">
+              <p class="text-[var(--muted)]">If trained, provide appropriate first aid. Control bleeding, maintain airway, treat for shock. Only move an injured person if they're in immediate danger. Keep the person warm and reassure them that help is coming.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="accordion-item border border-[var(--border)] rounded-xl overflow-hidden reveal" style="transition-delay: 0.5s;">
+          <button class="accordion-btn w-full flex items-center justify-between p-5 text-left bg-white hover:bg-gray-50 transition-colors" onclick="toggleAccordion(this)">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-lg bg-[var(--accent)] text-white flex items-center justify-center font-display font-bold">5</div>
+              <span class="font-display font-semibold">Stay Until Help Arrives</span>
+            </div>
+            <svg class="accordion-icon w-5 h-5 text-[var(--muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="accordion-content bg-gray-50">
+            <div class="p-5 pt-0">
+              <p class="text-[var(--muted)]">Don't leave the scene until emergency services arrive. Be ready to guide them to the exact location. Provide any relevant information about what happened and any first aid already administered.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Location Finder Section -->
+  <section class="py-16 px-4">
+    <div class="max-w-4xl mx-auto text-center reveal">
+      <div class="bg-gradient-to-br from-[var(--accent)] to-[var(--accent-dark)] rounded-3xl p-8 md:p-12 text-white">
+        <div class="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center mx-auto mb-6">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </div>
+        <h2 class="font-display text-2xl md:text-3xl font-bold mb-4">Enable Location Services</h2>
+        <p class="text-white/80 mb-6 max-w-lg mx-auto">Allow location access to find the nearest hospitals, blood banks, and emergency services in your area.</p>
+        <button onclick="getLocation()" class="inline-flex items-center gap-2 bg-white text-[var(--accent)] px-6 py-3 rounded-xl font-semibold hover:bg-white/90 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          Enable Location
+        </button>
+        <p id="location-status" class="text-white/60 text-sm mt-4 hidden"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="py-12 px-4 border-t border-[var(--border)]">
+    <div class="max-w-6xl mx-auto">
+      <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-[var(--accent)] flex items-center justify-center">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+            </svg>
+          </div>
+          <span class="font-display font-semibold">Emergency Help Finder</span>
+        </div>
+        <div class="text-[var(--muted)] text-sm text-center">
+          For life-threatening emergencies, always call your local emergency number first.
+        </div>
+        <div class="text-[var(--muted)] text-sm">
+          Made with care for public safety
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Modal -->
+  <div id="modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div class="bg-[var(--card)] rounded-2xl max-w-lg w-full max-h-[80vh] overflow-y-auto shadow-2xl">
+      <div class="p-6 border-b border-[var(--border)] flex items-center justify-between sticky top-0 bg-white">
+        <h3 id="modal-title" class="font-display font-semibold text-xl"></h3>
+        <button onclick="closeModal()" class="p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Close modal">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div id="modal-content" class="p-6"></div>
+    </div>
+  </div>
+
+  <script>
+    // Data for modal content
+    const modalData = {
+      hospital: {
+        title: 'Nearby Hospitals',
+        content: `
+          <p class="text-[var(--muted)] mb-6">Enable location services to find hospitals near you, or browse the list below.</p>
+          <div class="space-y-4">
+            <div class="border border-[var(--border)] rounded-xl p-4 hover:border-[var(--accent)] transition-colors cursor-pointer">
+              <div class="flex justify-between items-start mb-2">
+                <h4 class="font-semibold">City General Hospital</h4>
+                <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">Open 24/7</span>
+              </div>
+              <p class="text-[var(--muted)] text-sm mb-2">123 Healthcare Ave, Downtown</p>
+              <div class="flex items-center gap-4 text-sm">
+                <span class="text-[var(--muted)]">1.2 km away</span>
+                <span class="text-[var(--muted)]">Emergency Dept Available</span>
+              </div>
+              <a href="tel:+1234567890" class="inline-flex items-center gap-2 text-[var(--accent)] font-medium text-sm mt-3">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                </svg>
+                Call Now
+              </a>
+            </div>
+            <div class="border border-[var(--border)] rounded-xl p-4 hover:border-[var(--accent)] transition-colors cursor-pointer">
+              <div class="flex justify-between items-start mb-2">
+                <h4 class="font-semibold">St. Mary Medical Center</h4>
+                <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">Open 24/7</span>
+              </div>
+              <p class="text-[var(--muted)] text-sm mb-2">456 Mercy Street, East Side</p>
+              <div class="flex items-center gap-4 text-sm">
+                <span class="text-[var(--muted)]">2.8 km away</span>
+                <span class="text-[var(--muted)]">Trauma Center</span>
+              </div>
+              <a href="tel:+1234567891" class="inline-flex items-center gap-2 text-[var(--accent)] font-medium text-sm mt-3">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                </svg>
+                Call Now
+              </a>
+            </div>
+            <div class="border border-[var(--border)] rounded-xl p-4 hover:border-[var(--accent)] transition-colors cursor-pointer">
+              <div class="flex justify-between items-start mb-2">
+                <h4 class="font-semibold">Regional Emergency Hospital</h4>
+                <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">Open 24/7</span>
+              </div>
+              <p class="text-[var(--muted)] text-sm mb-2">789 Care Boulevard, North District</p>
+              <div class="flex items-center gap-4 text-sm">
+                <span class="text-[var(--muted)]">4.5 km away</span>
+                <span class="text-[var(--muted)]">ICU Available</span>
+              </div>
+              <a href="tel:+1234567892" class="inline-flex items-center gap-2 text-[var(--accent)] font-medium text-sm mt-3">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                </svg>
+                Call Now
+              </a>
+            </div>
+          </div>
+        `
+      },
+      bloodbank: {
+        title: 'Blood Banks',
+        content: `
+          <p class="text-[var(--muted)] mb-6">Find blood banks and donation centers. Call ahead to confirm availability.</p>
+          <div class="space-y-4">
+            <div class="border border-[var(--border)] rounded-xl p-4 hover:border-[var(--accent)] transition-colors">
+              <div class="flex justify-between items-start mb-2">
+                <h4 class="font-semibold">Regional Blood Center</h4>
+                <span class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">All Types Needed</span>
+              </div>
+              <p class="text-[var(--muted)] text-sm mb-2">100 Donation Drive, Central</p>
+              <p class="text-sm font-medium">Available: O+, O-, A+, B+</p>
+              <a href="tel:+1234567893" class="inline-flex items-center gap-2 text-[var(--accent)] font-medium text-sm mt-3">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                </svg>
+                Call Now
+              </a>
+            </div>
+            <div class="border border-[var(--border)] rounded-xl p-4 hover:border-[var(--accent)] transition-colors">
+              <div class="flex justify-between items-start mb-2">
+                <h4 class="font-semibold">City Blood Bank</h4>
+                <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full">Limited Stock</span>
+              </div>
+              <p class="text-[var(--muted)] text-sm mb-2">250 Life Street, West End</p>
+              <p class="text-sm font-medium">Available: AB+, A-</p>
+              <a href="tel:+1234567894" class="inline-flex items-center gap-2 text-[var(--accent)] font-medium text-sm mt-3">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                </svg>
+                Call Now
+              </a>
+            </div>
+          </div>
+          <div class="mt-6 p-4 bg-red-50 rounded-xl">
+            <h4 class="font-semibold text-[var(--accent-dark)] mb-2">Emergency Blood Request</h4>
+            <p class="text-sm text-[var(--muted)]">For urgent blood requirements, call the national helpline:</p>
+            <a href="tel:104" class="inline-flex items-center gap-2 text-[var(--accent)] font-semibold text-lg mt-2">
+              104 - Health Helpline
+            </a>
+          </div>
+        `
+      },
+      ambulance: {
+        title: 'Ambulance Services',
+        content: `
+          <p class="text-[var(--muted)] mb-6">Quick access to ambulance services. Tap to call immediately.</p>
+          <div class="space-y-4">
+            <a href="tel:108" class="block border-2 border-[var(--accent)] rounded-xl p-4 bg-red-50 hover:bg-red-100 transition-colors">
+              <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-xl bg-[var(--accent)] flex items-center justify-center">
+                  <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="text-2xl font-display font-bold text-[var(--accent)]">108</div>
+                  <div class="text-[var(--muted)] text-sm">Free Ambulance Service</div>
+                </div>
+              </div>
+            </a>
+            <a href="tel:102" class="block border border-[var(--border)] rounded-xl p-4 hover:border-[var(--accent)] transition-colors">
+              <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-xl bg-orange-100 flex items-center justify-center">
+                  <svg class="w-7 h-7 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="text-2xl font-display font-bold">102</div>
+                  <div class="text-[var(--muted)] text-sm">Patient Transport</div>
+                </div>
+              </div>
+            </a>
+          </div>
+          <div class="mt-6 p-4 bg-blue-50 rounded-xl">
+            <h4 class="font-semibold text-blue-800 mb-2">Private Ambulance Services</h4>
+            <div class="space-y-2">
+              <a href="tel:+18001234567" class="flex justify-between items-center text-sm">
+                <span>Express Ambulance</span>
+                <span class="text-[var(--accent)] font-medium">1-800-123-4567</span>
+              </a>
+              <a href="tel:+18007654321" class="flex justify-between items-center text-sm">
+                <span>City EMS Services</span>
+                <span class="text-[var(--accent)] font-medium">1-800-765-4321</span>
+              </a>
+            </div>
+          </div>
+        `
+      },
+      firstaid: {
+        title: 'First Aid Instructions',
+        content: `
+          <p class="text-[var(--muted)] mb-6">Essential first aid procedures for common emergencies. Scroll to see all categories.</p>
+          <div class="space-y-3">
+            <div class="p-4 border border-[var(--border)] rounded-xl">
+              <h4 class="font-semibold text-[var(--accent)] mb-2">CPR (Cardiopulmonary Resuscitation)</h4>
+              <ol class="text-sm text-[var(--muted)] space-y-1 list-decimal list-inside">
+                <li>Call emergency services</li>
+                <li>Place hands on center of chest</li>
+                <li>Push hard and fast (100-120/min)</li>
+                <li>Allow chest to recoil between compressions</li>
+                <li>Continue until help arrives</li>
+              </ol>
+            </div>
+            <div class="p-4 border border-[var(--border)] rounded-xl">
+              <h4 class="font-semibold text-[var(--accent)] mb-2">Recovery Position</h4>
+              <ol class="text-sm text-[var(--muted)] space-y-1 list-decimal list-inside">
+                <li>Kneel beside the person</li>
+                <li>Place arm nearest you at right angle</li>
+                <li>Place other hand against cheek</li>
+                <li>Pull far knee up, roll towards you</li>
+                <li>Tilt head back to keep airway open</li>
+              </ol>
+            </div>
+            <div class="p-4 border border-[var(--border)] rounded-xl">
+              <h4 class="font-semibold text-[var(--accent)] mb-2">Treating Shock</h4>
+              <ol class="text-sm text-[var(--muted)] space-y-1 list-decimal list-inside">
+                <li>Lay person down, elevate legs</li>
+                <li>Keep warm with blanket/coat</li>
+                <li>Loosen tight clothing</li>
+                <li>Don't give food or water</li>
+                <li>Monitor breathing and consciousness</li>
+              </ol>
+            </div>
+          </div>
+        `
+      }
+    };
+
+    // Modal functions
+    function openModal(type) {
+      const modal = document.getElementById('modal');
+      const title = document.getElementById('modal-title');
+      const content = document.getElementById('modal-content');
+      
+      if (modalData[type]) {
+        title.textContent = modalData[type].title;
+        content.innerHTML = modalData[type].content;
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      document.body.style.overflow = '';
+    }
+
+    // Close modal on backdrop click
+    document.getElementById('modal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeModal();
+      }
+    });
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeModal();
+      }
+    });
+
+    // Accordion functionality
+    function toggleAccordion(button) {
+      const isOpen = button.classList.contains('open');
+      
+      // Close all accordions
+      document.querySelectorAll('.accordion-btn').forEach(btn => {
+        btn.classList.remove('open');
+        btn.nextElementSibling.classList.remove('open');
+      });
+      
+      // Open clicked one if it was closed
+      if (!isOpen) {
+        button.classList.add('open');
+        button.nextElementSibling.classList.add('open');
+      }
+    }
+
+    // Tab functionality
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const tabId = this.dataset.tab;
+        
+        // Update active tab
+        document.querySelectorAll('.tab-btn').forEach(t => {
+          t.classList.remove('active');
+          t.classList.add('text-[var(--muted)]');
+        });
+        this.classList.add('active');
+        this.classList.remove('text-[var(--muted)]');
+        
+        // Show corresponding content
+        document.querySelectorAll('.tab-content').forEach(content => {
+          content.classList.add('hidden');
+        });
+        document.getElementById('tab-' + tabId).classList.remove('hidden');
+      });
+    });
+
+    // Location functionality
+    function getLocation() {
+      const status = document.getElementById('location-status');
+      status.classList.remove('hidden');
+      status.textContent = 'Requesting location...';
+      
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            status.textContent = `Location found: ${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}`;
+            status.style.color = '#2d6a4f';
+          },
+          (error) => {
+            status.textContent = 'Unable to get location. Please enable location services.';
+            status.style.color = '#e63946';
+          }
+        );
+      } else {
+        status.textContent = 'Geolocation is not supported by your browser.';
+        status.style.color = '#e63946';
+      }
+    }
+
+    // Scroll reveal animation
+    function revealOnScroll() {
+      const reveals = document.querySelectorAll('.reveal');
+      const windowHeight = window.innerHeight;
+      
+      reveals.forEach(reveal => {
+        const revealTop = reveal.getBoundingClientRect().top;
+        const revealPoint = 150;
+        
+        if (revealTop < windowHeight - revealPoint) {
+          reveal.classList.add('visible');
+        }
+      });
+    }
+
+    // Check for reduced motion preference
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    
+    if (!prefersReducedMotion) {
+      window.addEventListener('scroll', revealOnScroll);
+      // Initial check
+      revealOnScroll();
+    } else {
+      // Show all elements immediately if reduced motion is preferred
+      document.querySelectorAll('.reveal').forEach(el => {
+        el.classList.add('visible');
+      });
+    }
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({
+            behavior: prefersReducedMotion ? 'auto' : 'smooth',
+            block: 'start'
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>
